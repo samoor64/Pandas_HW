@@ -1,0 +1,244 @@
+# Dependencies and Setup
+import pandas as pd
+import numpy as np
+
+# Raw data file
+file_to_load = "Resources/purchase_data.csv"
+
+# Read purchasing file and store into pandas data frame
+purchase_data = pd.read_csv(file_to_load)
+
+
+# ## Player Count
+
+# * Display the total number of players
+# 
+
+# In[2]:
+
+
+player_count = purchase_data.groupby('SN').nunique()
+sum_player = player_count['SN'].sum()
+
+sum_player
+
+
+# In[3]:
+
+
+summary_players_df = pd.DataFrame({"Total Players": [sum_player]})
+summary_players_df
+
+
+# ## Purchasing Analysis (Total)
+
+# * Run basic calculations to obtain number of unique items, average price, etc.
+# 
+# 
+# * Create a summary data frame to hold the results
+# 
+# 
+# * Optional: give the displayed data cleaner formatting
+# 
+# 
+# * Display the summary data frame
+# 
+
+# In[4]:
+
+
+purchase_data.head()
+
+
+# In[5]:
+
+
+unique_item = purchase_data['Item ID'].nunique()
+avg_price = purchase_data['Price'].mean()
+count_price = purchase_data['Price'].count()
+total_rev = purchase_data['Price'].sum()
+
+item_summary = pd.DataFrame({"Number of Unique Items" : [unique_item],
+                             "Total Revenue" : [total_rev],
+                             "Number of Purchases" : [count_price],
+                             "Average Price" : [avg_price]})
+
+item_summary
+
+
+# ## Gender Demographics
+
+# * Percentage and Count of Male Players
+# 
+# 
+# * Percentage and Count of Female Players
+# 
+# 
+# * Percentage and Count of Other / Non-Disclosed
+# 
+# 
+# 
+
+# In[6]:
+
+
+remove_sn_dup = purchase_data.drop_duplicates('SN')
+
+
+# In[7]:
+
+
+#Looking at SN, unique values for male, female, and other are provided
+#Not a fan of this method
+remove_duplicates = purchase_data.groupby('Gender').nunique()
+remove_duplicates
+
+gender_df = remove_duplicates[['SN']]
+gender_df.rename(columns={'SN': 'Total Count'})
+
+
+# In[22]:
+
+
+#Variables for male, female, and other counts and percents (better method)
+#Stick these in a df
+
+count_male = remove_sn_dup['Gender'].str.count('Male').sum()
+count_male
+
+count_female = remove_sn_dup['Gender'].str.count('Female').sum()
+count_female
+
+count_other = remove_sn_dup['Gender'].str.count('Other / Non-Disclosed').sum()
+count_other
+
+total_count = count_other + count_female + count_male
+total_count
+
+percent_male = count_male / total_count * 100
+
+percent_female = count_female / total_count * 100
+
+percent_other = count_other / total_count * 100
+
+genders_df= pd.DataFrame({
+    "Female" : [count_female, percent_female], 
+    "Male": [count_male, percent_male], 
+    "Other" : [count_other, percent_other]})
+genders_df
+
+genders_df = pd.DataFrame({"Gender": ["Female","Male", "Other"],
+                           "Percentage of Players": ['{:,.2f}'.format(x) for x in [percent_female, percent_male, percent_other]],
+                           "Total Count": [count_female, count_male, count_other],})
+
+genders_df
+
+
+# 
+# ## Purchasing Analysis (Gender)
+
+# * Run basic calculations to obtain purchase count, avg. purchase price, avg. purchase total per person etc. by gender
+# 
+# 
+# 
+# 
+# * Create a summary data frame to hold the results
+# 
+# 
+# * Optional: give the displayed data cleaner formatting
+# 
+# 
+# * Display the summary data frame
+
+# In[57]:
+
+
+#pricepurchase_data.groupby('Gender').sum()
+#sum_price = purchase_data['Price'].sum()
+#Count of Total Purchases by Gender
+pc_male = purchase_data['Gender'].str.count('Male').sum()
+pc_male
+
+pc_female = purchase_data['Gender'].str.count('Female').sum()
+pc_female
+
+pc_other = purchase_data['Gender'].str.count('Other / Non-Disclosed').sum()
+pc_other 
+
+test_avg_df = purchase_data.groupby('Gender').mean()
+
+avg_gender_price = test_avg_df['Price']
+
+avg_female = avg_gender_price['Female']
+avg_male = avg_gender_price['Male']
+avg_other = avg_gender_price['Other / Non-Disclosed']
+
+total_purchase_value = purchase_data.groupby('Gender').sum()
+
+total_purchase = total_purchase_value['Price']
+female_purchase = total_purchase['Female']
+male_purchase = total_purchase['Male']
+other_purchase = total_purchase['Other / Non-Disclosed']
+
+#purchase_df = pd.DataFrame[total_purchase]
+
+#Total Purchase Value by Gender Variable
+#total_purchase_price = purchase_data.groupby('Gender')["Price"].sum()
+#total_purchase_price
+
+#average_price_male = total_purchase_price / pc_other
+#average_price_male
+
+purchasing_analysis = pd.DataFrame({"Gender": ["Female", "Male", "Other"],
+                                    "Purchase Count": [pc_female, pc_male, pc_other],
+                                    "Average Purchase Price": [avg_female, avg_male, avg_other],
+                                    "Total Purchase Value": [female_purchase, male_purchase, other_purchase]})
+
+group_purchase = purchasing_analysis.groupby('Gender').sum()
+group_purchase
+
+
+# ## Age Demographics
+
+# * Establish bins for ages
+# 
+# 
+# * Categorize the existing players using the age bins. Hint: use pd.cut()
+# 
+# 
+# * Calculate the numbers and percentages by age group
+# 
+# 
+# * Create a summary data frame to hold the results
+# 
+# 
+# * Optional: round the percentage column to two decimal points
+# 
+# 
+# * Display Age Demographics Table
+# 
+
+# In[10]:
+
+
+#min 7 max 45
+print(remove_sn_dup['Age'].min())
+print(remove_sn_dup['Age'].max())
+
+age_bin = [0, 9.90, 14.90, 19.90, 24.90, 29.90, 34.90, 39.90, 99999]
+#group_name = ["<10", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40+"]
+
+
+# In[72]:
+
+
+# Establish bins for ages
+age_bins = [0, 9.90, 14.90, 19.90, 24.90, 29.90, 34.90, 39.90, 99999]
+group_names = ["<10", "10-14", "15-19", "20-24", "25-29", "30-34", "35-39", "40+"]
+
+age_df = pd.DataFrame()
+remove_sn_dup['Age Ranges'] = pd.cut(remove_sn_dup["Age"],bins=age_bins,labels=group_names)
+
+age_count_df = remove_sn_dup.groupby('Age Ranges').count()
+
+age_count_df
